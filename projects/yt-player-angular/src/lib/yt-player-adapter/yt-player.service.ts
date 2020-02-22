@@ -1,37 +1,46 @@
-import { Injectable } from '@angular/core';
-import * as YtPlayer from 'yt-player';
-import { Observable } from 'rxjs';
-import { PlayerOptions } from '../player-options';
-import { YtPlayerAdapterModule } from './yt-player-adapter.module';
-import { EventsRegistry } from './events-registry/events-registry';
-import { PlaybackQuality } from './models/playback-quality';
-import { PlayerState } from './models/player-state';
-import { PlayerMethods } from './models/player-methods';
-import { StateChange } from './models/state-change';
+import { Injectable } from "@angular/core";
+import * as YtPlayer from "yt-player";
+import { Observable } from "rxjs";
+import { PlayerOptions } from "../player-options";
+import { YtPlayerAdapterModule } from "./yt-player-adapter.module";
+import { EventsRegistry } from "./events-registry/events-registry";
+import { PlaybackQuality } from "./models/playback-quality";
+import { PlayerState } from "./models/player-state";
+import { PlayerMethods } from "./models/player-methods";
+import { StateChange } from "./models/state-change";
 
 @Injectable({ providedIn: YtPlayerAdapterModule })
 export class YtPlayerService implements PlayerMethods {
+  public get stateChange$(): Observable<StateChange> {
+    return this.eventsRegistry.stateChange$.asObservable();
+  }
+  public get destroyed(): boolean {
+    return this.player.destroyed;
+  }
+  public get videoId(): string {
+    return this.player.videoId;
+  }
 
-  public get stateChange$(): Observable<StateChange> { return this.eventsRegistry.stateChange$.asObservable(); }
-  public get destroyed(): boolean { return this.player.destroyed; }
-  public get videoId(): string { return this.player.videoId; }
-
-  private get player(): YtPlayer { return this.ytPlayer; }
-  private set player(value: YtPlayer) { this.ytPlayer = value; }
+  private get player(): YtPlayer {
+    return this.ytPlayer;
+  }
+  private set player(value: YtPlayer) {
+    this.ytPlayer = value;
+  }
 
   private ytPlayer: YtPlayer;
   private playerOptions: PlayerOptions;
 
-  constructor( private eventsRegistry: EventsRegistry ) { }
+  constructor(private eventsRegistry: EventsRegistry) {}
 
   public init(htmlId: string, playerOptions?: PlayerOptions): void {
     this.setUpPlayer(htmlId, playerOptions);
     this.eventsRegistry.register(this.player);
   }
 
-  public load(videoId: string): void {
+  public load(videoId: string, startAt?: number): void {
     const autoplay = this.playerOptions && this.playerOptions.autoplay;
-    this.player.load(videoId, autoplay);
+    this.player.load(videoId, autoplay, startAt);
   }
 
   public play(): void {
@@ -52,7 +61,9 @@ export class YtPlayerService implements PlayerMethods {
 
   public setVolume(value: number): void {
     if (value > 100) {
-      console.warn(`Provided value ${value} exceeds max value. 100 used instead`);
+      console.warn(
+        `Provided value ${value} exceeds max value. 100 used instead`
+      );
     }
     this.player.setVolume(value);
   }
@@ -64,7 +75,6 @@ export class YtPlayerService implements PlayerMethods {
   public mute(): void {
     this.player.mute();
   }
-​
   public unMute(): void {
     this.player.unMute();
   }
@@ -76,7 +86,6 @@ export class YtPlayerService implements PlayerMethods {
   public setSize(width: number, height: number): void {
     this.player.setSize(width, height);
   }
-​
   public setPlaybackRate(rate: number): void {
     this.player.setPlaybackRate(rate);
   }
@@ -84,11 +93,9 @@ export class YtPlayerService implements PlayerMethods {
   public setPlaybackQuality(sugestedQuality: PlaybackQuality): void {
     this.player.setPlaybackQuality(sugestedQuality);
   }
-​
   public getPlaybackRate(): number {
     return this.player.getPlaybackRate();
   }
-​
   public getAvailablePlaybackRates(): number[] {
     return this.player.getAvailablePlaybackRates();
   }
@@ -96,11 +103,9 @@ export class YtPlayerService implements PlayerMethods {
   public getDuration(): number {
     return this.player.getDuration();
   }
-​
   public getBufferingProgress(): number {
     return this.player.getProgress();
   }
-​
   public getState(): PlayerState {
     return this.player.getState();
   }
@@ -108,7 +113,6 @@ export class YtPlayerService implements PlayerMethods {
   public getCurrentTime(): number {
     return this.player.getCurrentTime();
   }
-​​
   public destroy(): void {
     this.player.destroy();
   }

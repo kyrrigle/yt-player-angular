@@ -27,6 +27,7 @@ import { StateChangeType } from "./yt-player-adapter/models/state-change-type";
 export class YtPlayerComponent implements OnChanges, OnInit, OnDestroy {
   @Input() public videoId: string;
   @Input() public options: PlayerOptions;
+  @Input() public startAt: number;
 
   @Output() public stateChange = new EventEmitter<StateChange>();
 
@@ -88,7 +89,7 @@ export class YtPlayerComponent implements OnChanges, OnInit, OnDestroy {
 
   private loadVideo(): void {
     try {
-      this.ytPlayerService.load(this.videoId);
+      this.ytPlayerService.load(this.videoId, this.startAt);
     } catch (err) {
       console.error(this.errorMessage);
     }
